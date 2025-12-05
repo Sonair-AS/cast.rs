@@ -13,6 +13,7 @@ edition = "2018"
 # Enable this to get a std::error::Error impl for convenient use with other
 # libraries.
 std = []
+certified_subset = []
 
 [dev-dependencies]
 quickcheck = "1.0.3"

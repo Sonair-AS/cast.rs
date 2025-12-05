@@ -88,7 +88,6 @@
 //! cast = { version = "*", default-features = false }
 //! ```
 
-#![allow(const_err)]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
@@ -98,6 +97,7 @@
 #[macro_use]
 extern crate quickcheck;
 
+#[cfg(not(feature = "certified_subset"))]
 use core::fmt;
 #[cfg(feature = "std")]
 use std::error;
@@ -106,7 +106,8 @@ use std::error;
 mod test;
 
 /// Cast errors
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub enum Error {
     /// Infinite value casted to a type that can only represent finite values
     Infinite,
@@ -120,6 +121,7 @@ pub enum Error {
     Underflow,
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl Error {
     /// A private helper function that implements `description`, because
     /// `description` is only available when we have `std` enabled.
@@ -133,6 +135,7 @@ impl Error {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description_helper())
@@ -223,7 +226,7 @@ macro_rules! from_unsigned {
 
                     #[inline]
                     fn cast(src: $src) -> Self::Output {
-                        use core::$dst;
+                        use $dst;
 
                         if src > $dst::MAX as $src {
                             Err(Error::Overflow)
@@ -247,7 +250,7 @@ macro_rules! from_signed {
 
                     #[inline]
                     fn cast(src: $src) -> Self::Output {
-                        use core::$dst;
+                        use $dst;
 
                         Err(if src < $dst::MIN as $src {
                             Error::Underflow
@@ -273,7 +276,7 @@ macro_rules! from_float {
 
                     #[inline]
                     fn cast(src: $src) -> Self::Output {
-                        use core::{$dst, $src};
+                        use {$dst, $src};
 
                         Err(if src != src {
                             Error::NaN
@@ -330,7 +333,7 @@ macro_rules! from_float_dst {
                     #[inline]
                     #[allow(unused_comparisons)]
                     fn cast(src: $src) -> Self::Output {
-                        use core::{$dst, $src};
+                        use {$dst, $src};
 
                         Err(if src != src {
                             Error::NaN
