@@ -15,5 +15,8 @@ edition = "2021"
 std = []
 certified_subset = []
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [dev-dependencies]
 quickcheck = "1.0.3"
