@@ -92,6 +92,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(warnings)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 #[cfg(test)]
 #[macro_use]
@@ -125,6 +126,7 @@ pub enum Error {
 impl Error {
     /// A private helper function that implements `description`, because
     /// `description` is only available when we have `std` enabled.
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn description_helper(&self) -> &str {
         match *self {
             Error::Infinite => "Cannot store infinite value in finite type",
@@ -137,6 +139,7 @@ impl Error {
 
 #[cfg(not(feature = "certified_subset"))]
 impl fmt::Display for Error {
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.description_helper())
     }
@@ -275,6 +278,8 @@ macro_rules! from_float {
                     type Output = Result<$dst, Error>;
 
                     #[inline]
+                    #[allow(clippy::legacy_numeric_constants)] // Macro uses core::$src::MANTISSA_DIGITS because $src is a macro parameter
+                    #[allow(clippy::eq_op)] // src != src is the NaN check idiom; .is_nan() is not available on the macro type parameter
                     fn cast(src: $src) -> Self::Output {
                         use {$dst, $src};
 
@@ -331,7 +336,8 @@ macro_rules! from_float_dst {
                      type Output = Result<$dst, Error>;
 
                     #[inline]
-                    #[allow(unused_comparisons)]
+                    #[allow(unused_comparisons)] // $dst::MIN == 0 is always true for unsigned types but needed for signed/unsigned generality
+                    #[allow(clippy::eq_op)] // src != src is the NaN check idiom; .is_nan() is not available on the macro type parameter
                     fn cast(src: $src) -> Self::Output {
                         use {$dst, $src};
 
@@ -526,6 +532,8 @@ impl From<f64> for f32 {
     type Output = Result<f32, Error>;
 
     #[inline]
+    #[allow(clippy::eq_op)] // src != src is the NaN check idiom matching the macro style
+    #[allow(clippy::legacy_numeric_constants)] // Uses core::{f32, f64} module constants for consistency with MSRV
     fn cast(src: f64) -> Self::Output {
         use core::{f32, f64};
 
