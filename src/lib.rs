@@ -13,11 +13,11 @@
 //!
 //! // Everything else will return a `Result` depending on the success of the
 //! // operation
-//! assert_eq!(u8(0u16), Ok(0u8));
-//! assert_eq!(u8(256u16), Err(Error::Overflow));
-//! assert_eq!(u8(-1i8), Err(Error::Underflow));
-//! assert_eq!(u8(1. / 0.), Err(Error::Infinite));
-//! assert_eq!(u8(0. / 0.), Err(Error::NaN));
+//! assert!(u8(0u16) == Ok(0u8));
+//! assert!(u8(256u16) == Err(Error::Overflow));
+//! assert!(u8(-1i8) == Err(Error::Underflow));
+//! assert!(u8(1. / 0.) == Err(Error::Infinite));
+//! assert!(u8(0. / 0.) == Err(Error::NaN));
 //! # }
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! // `u8` as a module
 //! let y = u16(u8::MAX);
 //! // `u8` as a function
-//! let z = u8(y).unwrap();
+//! let z = match u8(y) { Ok(v) => v, Err(_) => panic!() };
 //! # }
 //! ```
 //!
@@ -107,7 +107,7 @@ use std::error;
 mod test;
 
 /// Cast errors
-#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[cfg_attr(any(not(feature = "certified_subset"), test), derive(Debug))]
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum Error {
     /// Infinite value casted to a type that can only represent finite values
